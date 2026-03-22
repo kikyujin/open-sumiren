@@ -132,6 +132,25 @@ async function initUniver(notebookName: string) {
 }
 
 // ============================================
+// セル値取得ヘルパー（Univer リッチテキスト対応）
+// ============================================
+function getCellValue(sheet: any, cellRef: string): string {
+  const range = sheet.getRange(cellRef)
+  const val = range.getValue()
+  if (val != null) return String(val)
+
+  // getValue() が null の場合、リッチテキスト（p.body.dataStream）から取得
+  const cellData = range.getCellData()
+  const dataStream = cellData?.p?.body?.dataStream
+  if (dataStream) {
+    // dataStream は末尾に \r\n が付くので trim
+    return dataStream.replace(/\r?\n$/, '')
+  }
+
+  return ''
+}
+
+// ============================================
 // LLM実行ロジック
 // ============================================
 async function executeLLM(univerAPI: any, notebookMeta: any) {
@@ -166,8 +185,7 @@ async function executeLLM(univerAPI: any, notebookMeta: any) {
     // --- プロンプト取得 ---
     let prompt = parsed.prompt
     if (parsed.promptRef) {
-      const promptRange = sheet.getRange(parsed.promptRef)
-      prompt = String(promptRange.getValue() || '')
+      prompt = getCellValue(sheet, parsed.promptRef)
     }
     if (!prompt) {
       outputRange.setValue('#ERROR: Empty prompt')
@@ -178,10 +196,8 @@ async function executeLLM(univerAPI: any, notebookMeta: any) {
     const contextParts: string[] = []
 
     for (const inputRef of parsed.inputs) {
-      const inputRange = sheet.getRange(inputRef)
-      const cellRaw = inputRange.getValue()
-      console.log(`[LLM] input ${inputRef}: getValue() =`, cellRaw, typeof cellRaw)
-      let rawValue = String(cellRaw || '')
+      let rawValue = getCellValue(sheet, inputRef)
+      console.log(`[LLM] input ${inputRef}:`, rawValue ? rawValue.substring(0, 80) : '(empty)')
 
       // file:/// URI ならファイル内容に展開
       if (rawValue.startsWith('file:///') || rawValue.startsWith('/')) {
