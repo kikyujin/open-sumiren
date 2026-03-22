@@ -113,6 +113,8 @@ npm run dev
 - Phase 1.5: ノードメニュー（名前変更、LLMモデル設定、削除） ✅
 - Phase 1.6: xLLM関数（Gemini API）+ llm_model反映 ✅
 - Phase 1.7: シートメニューUI改善（タブタイトル、自動保存） ✅
+- Phase 1.8: OSS公開準備（README, LICENSE, .gitignore整理） ✅
+- Phase 1.9: GitHub公開（kikyujin/open-sumiren, Apache-2.0） ✅
 
 ## 技術スタック
 
